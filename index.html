@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Management</title>
+	    <link rel="stylesheet" href="styles.css">
+
+    <script>
+        const apiUrl = 'http://127.0.0.1:5000/courses';
+
+        async function fetchCourses() {
+            const response = await fetch(apiUrl);
+            const courses = await response.json();
+            const coursesList = document.getElementById('courses-list');
+            coursesList.innerHTML = '';
+            courses.forEach(course => {
+                const courseItem = document.createElement('div');
+                courseItem.innerHTML = `
+                    <h3>${course.title}</h3>
+                    <p>${course.description}</p>
+                    <p>Duration: ${course.duration}</p>
+                    <button onclick="deleteCourse(${course.id})">Delete</button>
+                `;
+                coursesList.appendChild(courseItem);
+            });
+        }
+
+        async function addCourse() {
+            const title = document.getElementById('title').value;
+            const description = document.getElementById('description').value;
+            const duration = document.getElementById('duration').value;
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ title, description, duration }),
+            });
+
+            if (response.ok) {
+                fetchCourses();
+                document.getElementById('title').value = '';
+                document.getElementById('description').value = '';
+                document.getElementById('duration').value = '';
+            }
+        }
+
+        async function deleteCourse(id) {
+            await fetch(`${apiUrl}/${id}`, {
+                method: 'DELETE',
+            });
+            fetchCourses();
+        }
+
+        window.onload = fetchCourses;
+    </script>
+</head>
+<body>
+    <h1>Course Management</h1>
+     <div id="course-form">
+        <input type="text" id="title" placeholder="Course Title">
+        <input type="text" id="description" placeholder="Course Description">
+        <input type="text" id="duration" placeholder="Duration">
+        <button onclick="addCourse()">Add Course</button>
+    </div>
+    <div id="courses-list"></div>
+</body>
+</html>
